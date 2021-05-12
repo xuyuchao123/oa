@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xyc.dao.MenuMapper">
+
+  <resultMap id="menuMap" type="com.xyc.entity.Menu">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="menu_name" jdbcType="VARCHAR" property="menuName" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="menu_index" jdbcType="INTEGER" property="menuIndex" />
+    <result column="parent_id" jdbcType="INTEGER" property="parentId" />
+    <result column="display" jdbcType="INTEGER" property="display" />
+  </resultMap>
+
+  <select id="selectByPrimaryKey" resultMap="menuMap">
+    select id, menu_name, url, menu_index, parent_id, display
+    from sa_menu
+    where id = #{id}
+  </select>
+
+  <select id="selectMenuByResponsibilityId" resultMap="menuMap">
+    select a.id, a.menu_name, a.url, a.menu_index, a.parent_id, a.display
+    from sa_menu a
+    left join sa_responsibilitymenu b on a.id = b.menu_id
+    where b.responsibility_id = #{responsibilityId}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from sa_menu
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xyc.entity.Menu">
+    <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into sa_menu (id, menu_name, url, 
+      menu_index, parent_id, display
+      )
+    values (#{id,jdbcType=INTEGER}, #{menuName,jdbcType=VARCHAR}, #{url,jdbcType=VARCHAR}, 
+      #{menuIndex,jdbcType=INTEGER}, #{parentId,jdbcType=INTEGER}, #{display,jdbcType=INTEGER}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xyc.entity.Menu">
+    update sa_menu
+    set menu_name = #{menuName,jdbcType=VARCHAR},
+      url = #{url,jdbcType=VARCHAR},
+      menu_index = #{menuIndex,jdbcType=INTEGER},
+      parent_id = #{parentId,jdbcType=INTEGER},
+      display = #{display,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+  <select id="selectAll" resultMap="menuMap">
+    select id, menu_name, url, menu_index, parent_id, display
+    from sa_menu
+  </select>
+</mapper>

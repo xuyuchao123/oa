@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xyc.dao.SysUserMapper" >
+
+    <resultMap id="sysUserBaseMap" type="com.xyc.entity.SysUser">
+        <id property="id" column="id"/>
+        <result property="userName" column="user_name"/>
+        <result property="password" column="password" />
+        <result property="userNum" column="user_num"/>
+        <result property="inputUserId" column="input_user_id"/>
+        <result property="inputDate" column="input_date" />
+        <result property="dataStatus" column="data_status" />
+        <result property="userStatus" column="user_status" />
+        <result property="modifyUserId" column="modify_user_id" />
+        <result property="modifyDate" column="modify_date" />
+    </resultMap>
+
+    <!--关联的嵌套结果映射 一次sql查询将属性映射至不同对象中-->
+    <resultMap id="sysUserMap" type="com.xyc.entity.SysUser" extends="sysUserBaseMap">
+        <collection property="roles" columnPrefix="role_"  resultMap="com.xyc.dao.RoleMapper.roleMap" />
+    </resultMap>
+
+    <!--<sql id="user_column">-->
+        <!--id,-->
+        <!--username,-->
+        <!--password-->
+    <!--</sql>-->
+
+    <select id="selectUserRoleByUsername"  resultMap="sysUserMap" parameterType="java.lang.String">
+        select a.*,
+        r.id role_id, r.role_name role_role_name, r.input_user_id role_input_user_id, r.input_date role_input_date,
+        r.data_status role_data_status, r.role_status role_role_status, r.modify_user_id role_modify_user_id, r.modify_date role_modify_date,
+        rb.id role_resp_id, rb.code role_resp_code, rb.name role_resp_name, rb.input_user_id role_resp_input_user_id, rb.input_date role_resp_input_date,
+        rb.data_status role_resp_data_status, rb.check_status role_resp_check_status, rb.last_modify_user_id role_resp_last_modify_user_id, rb.modify_date role_resp_modify_date,
+        s.id role_sys_id, s.sys_name role_sys_sys_name, s.sys_code role_sys_sys_code, s.data_status role_sys_data_status,
+        m.id role_resp_menu_id, m.menu_name role_resp_menu_menu_name, m.url role_resp_menu_url, m.menu_index role_resp_menu_menu_index, m.parent_id role_resp_menu_parent_id,
+        m.display role_resp_menu_display
+        from sa_user a
+        left join sa_userrole ur on a.id = ur.user_id
+        left join sa_role r on ur.role_id = r.id
+        left join sa_responsibility rb on r.responsibility_id = rb.id
+        left join sa_rolesystem rs on r.id = rs.role_id
+        left join os_system s on rs.system_id = s.id
+        left join sa_responsibilitymenu rm on rb.id = rm.responsibility_id
+        left join sa_menu m on rm.menu_id = m.id
+        <where>
+            <if test="userName != null">
+                and a.user_name = #{userName}
+            </if>
+        </where>
+        order by user_num
+    </select>
+
+    <!--关联的嵌套查询，多次sql查询得到所需对象，可配置懒加载提高性能。column可配置多个，用逗号隔开-->
+    <resultMap id="sysUserMapSelect" type="com.xyc.entity.SysUser" extends="sysUserBaseMap">
+        <collection property="roles" column="{userId=id}" fetchType="eager"
+                    select="com.xyc.dao.RoleMapper.selectRoleByUserId" />
+    </resultMap>
+
+    <select id="selectUserRoleByUsernameSelect" resultMap="sysUserMapSelect" parameterType="java.lang.String">
+        select *
+        from sa_user a
+        <where>
+            <if test="userName != null">
+                and a.user_name = #{userName}
+            </if>
+        </where>
+        order by user_num
+    </select>
+
+
+    <select id="testForeach" resultType="SysUser">
+        select * from sa_user a
+        where id IN
+        <foreach collection="list" open="(" close=")" separator="," item="id" index="i">
+            #{id}
+        </foreach>
+    </select>
+
+    <!--使用jdbc的getgeneratedKeys方法获取主键并赋值到类的id属性中-->
+    <!--<insert id="insert" useGeneratedKeys="true" keyProperty="id" >-->
+        <!--insert into sa_user (userName,password,userNum)-->
+        <!--values (#{userName},#{password},#{userNum})-->
+    <!--</insert>-->
+
+    <update id="updateByUserName">
+        update sa_user a
+        set a.password = #{password}
+        where a.user_name = #{userName}
+    </update>
+
+</mapper>
+

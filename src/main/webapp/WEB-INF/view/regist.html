@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>用户注册</title>
+</head>
+<body>
+
+    <span>[[${loginError}]]</span>
+
+    <form action="/regist.sysUser" method ="post" >
+        用户名：<input type = "text" name = "userName" ><br>
+        密码：<input type="text" name = "password" >
+        确认密码：<input type="text" name = "repassword" >
+        用户代码：<input type="text" name = "userNum" >
+        <input type="submit" value = "注册" >
+
+    </form>
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Title</title>
+</head>
+<body>
+<table border="1">
+    <tr>
+        <th>流程id</th>
+        <th>流程名称</th>
+        <th>提交人</th>
+        <th>当前审批环节</th>
+
+    </tr>
+    <tr  th:each="pi,piStat : ${pIList}">
+        <td th:text="${pi.procInstId}"></td>
+        <td th:text="${pi.procName}"></td>
+        <td th:text="${pi.submitUserName}"></td>
+        <td th:text="${pi.curNode}"></td>
+    </tr>
+</table>
+
+</body>
+</html>
+

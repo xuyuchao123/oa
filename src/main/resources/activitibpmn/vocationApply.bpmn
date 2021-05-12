@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/processdef">
+  <process id="vocationApply" name="请假申请" isExecutable="true">
+    <extensionElements>
+      <activiti:executionListener event="end" class="com.xyc.activiti.MyExecutionListener"></activiti:executionListener>
+    </extensionElements>
+    <startEvent id="startApply" name="申请开始"></startEvent>
+    <userTask id="stuEdit" name="学生起草" activiti:assignee="${submitUser}"></userTask>
+    <userTask id="teachApprove" name="班主任审批">
+      <extensionElements>
+        <activiti:taskListener event="create" class="com.xyc.activiti.AssigneeListener"></activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <userTask id="bossApprove" name="教务处审批" activiti:candidateUsers="主任1,主任2,主任3"></userTask>
+    <endEvent id="end" name="结束"></endEvent>
+    <exclusiveGateway id="sid-5396C7BF-C035-4834-9E75-E88F24B9F705"></exclusiveGateway>
+    <exclusiveGateway id="sid-CACF3E7C-343B-44CD-BF79-06EC4BFA5191"></exclusiveGateway>
+    <exclusiveGateway id="sid-C09DA706-D4A7-415B-A4A5-170AB5F9F20E"></exclusiveGateway>
+    <sequenceFlow id="sid-3E5AED3A-B5D9-4C0C-87A0-B516B2C1949E" sourceRef="startApply" targetRef="stuEdit"></sequenceFlow>
+    <sequenceFlow id="bossSubmit" name="教务处提交" sourceRef="bossApprove" targetRef="sid-C09DA706-D4A7-415B-A4A5-170AB5F9F20E"></sequenceFlow>
+    <sequenceFlow id="teaSubmit" name="班主任提交" sourceRef="teachApprove" targetRef="sid-5396C7BF-C035-4834-9E75-E88F24B9F705"></sequenceFlow>
+    <sequenceFlow id="aboveDays" name="大于等于7天" sourceRef="sid-CACF3E7C-343B-44CD-BF79-06EC4BFA5191" targetRef="bossApprove">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${day>=7}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="stuSubmit" name="提交" sourceRef="stuEdit" targetRef="teachApprove"></sequenceFlow>
+    <sequenceFlow id="teaRefuse" name="拒绝" sourceRef="sid-5396C7BF-C035-4834-9E75-E88F24B9F705" targetRef="stuEdit">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${teaApp==false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="teaAgree" name="同意" sourceRef="sid-5396C7BF-C035-4834-9E75-E88F24B9F705" targetRef="sid-CACF3E7C-343B-44CD-BF79-06EC4BFA5191">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${teaApp==true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="belowDays" name="小于7天" sourceRef="sid-CACF3E7C-343B-44CD-BF79-06EC4BFA5191" targetRef="end">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${day>0&& day<7}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="bossAgree" name="同意" sourceRef="sid-C09DA706-D4A7-415B-A4A5-170AB5F9F20E" targetRef="end">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${bossApp==true}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="bossRefuse" name="拒绝" sourceRef="sid-C09DA706-D4A7-415B-A4A5-170AB5F9F20E" targetRef="stuEdit">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${bossApp==false}]]></conditionExpression>
+    </sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_vocationApply">
+    <bpmndi:BPMNPlane bpmnElement="vocationApply" id="BPMNPlane_vocationApply">
+      <bpmndi:BPMNShape bpmnElement="startApply" id="BPMNShape_startApply">
+        <omgdc:Bounds height="30.0" width="30.0" x="180.0" y="195.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="stuEdit" id="BPMNShape_stuEdit">
+        <omgdc:Bounds height="80.0" width="100.0" x="279.0" y="170.20000000000005"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="teachApprove" id="BPMNShape_teachApprove">
+        <omgdc:Bounds height="80.0" width="100.0" x="465.0" y="170.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="bossApprove" id="BPMNShape_bossApprove">
+        <omgdc:Bounds height="80.0" width="100.0" x="840.0" y="270.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="end" id="BPMNShape_end">
+        <omgdc:Bounds height="28.0" width="28.0" x="1011.0" y="196.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-5396C7BF-C035-4834-9E75-E88F24B9F705" id="BPMNShape_sid-5396C7BF-C035-4834-9E75-E88F24B9F705">
+        <omgdc:Bounds height="40.0" width="40.0" x="645.0" y="190.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-CACF3E7C-343B-44CD-BF79-06EC4BFA5191" id="BPMNShape_sid-CACF3E7C-343B-44CD-BF79-06EC4BFA5191">
+        <omgdc:Bounds height="40.0" width="40.0" x="735.0" y="190.20000000000005"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="sid-C09DA706-D4A7-415B-A4A5-170AB5F9F20E" id="BPMNShape_sid-C09DA706-D4A7-415B-A4A5-170AB5F9F20E">
+        <omgdc:Bounds height="40.0" width="40.0" x="1005.0" y="290.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="aboveDays" id="BPMNEdge_aboveDays">
+        <omgdi:waypoint x="766.4991482112437" y="218.70085178875644"></omgdi:waypoint>
+        <omgdi:waypoint x="840.0" y="273.03703703703707"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="teaAgree" id="BPMNEdge_teaAgree">
+        <omgdi:waypoint x="684.9556541019956" y="210.04434589800445"></omgdi:waypoint>
+        <omgdi:waypoint x="735.0443458980044" y="210.1556541019956"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="teaRefuse" id="BPMNEdge_teaRefuse">
+        <omgdi:waypoint x="665.2" y="190.2"></omgdi:waypoint>
+        <omgdi:waypoint x="666.0" y="111.0"></omgdi:waypoint>
+        <omgdi:waypoint x="330.0" y="109.0"></omgdi:waypoint>
+        <omgdi:waypoint x="329.39525691699606" y="170.20000000000005"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="belowDays" id="BPMNEdge_belowDays">
+        <omgdi:waypoint x="774.9851961509993" y="210.1851961509993"></omgdi:waypoint>
+        <omgdi:waypoint x="1011.0000038408764" y="210.01037036752527"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bossSubmit" id="BPMNEdge_bossSubmit">
+        <omgdi:waypoint x="940.0" y="310.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1005.0" y="310.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bossRefuse" id="BPMNEdge_bossRefuse">
+        <omgdi:waypoint x="1025.0" y="330.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1025.0" y="392.0"></omgdi:waypoint>
+        <omgdi:waypoint x="331.0" y="392.0"></omgdi:waypoint>
+        <omgdi:waypoint x="329.4400440044004" y="250.20000000000005"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="stuSubmit" id="BPMNEdge_stuSubmit">
+        <omgdi:waypoint x="379.0" y="210.14623655913982"></omgdi:waypoint>
+        <omgdi:waypoint x="465.0" y="210.05376344086022"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="bossAgree" id="BPMNEdge_bossAgree">
+        <omgdi:waypoint x="1025.0" y="290.0"></omgdi:waypoint>
+        <omgdi:waypoint x="1025.0" y="224.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="sid-3E5AED3A-B5D9-4C0C-87A0-B516B2C1949E" id="BPMNEdge_sid-3E5AED3A-B5D9-4C0C-87A0-B516B2C1949E">
+        <omgdi:waypoint x="209.99998329252068" y="210.02238803476496"></omgdi:waypoint>
+        <omgdi:waypoint x="279.0" y="210.12537313432838"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="teaSubmit" id="BPMNEdge_teaSubmit">
+        <omgdi:waypoint x="565.0" y="210.0"></omgdi:waypoint>
+        <omgdi:waypoint x="645.0" y="210.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

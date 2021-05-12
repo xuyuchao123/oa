@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xyc.dao.ResponsibilityMapper">
+
+  <resultMap id="responsibilityBaseMap" type="com.xyc.entity.Responsibility">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="input_user_id" jdbcType="INTEGER" property="inputUserId" />
+    <result column="input_date" jdbcType="TIMESTAMP" property="inputDate" />
+    <result column="data_status" jdbcType="INTEGER" property="dataStatus" />
+    <result column="check_status" jdbcType="INTEGER" property="checkStatus" />
+    <result column="last_modify_user_id" jdbcType="INTEGER" property="lastModifyUserId" />
+    <result column="modify_date" jdbcType="TIMESTAMP" property="modifyDate" />
+  </resultMap>
+
+  <!--关联的嵌套结果映射 一次sql查询将属性映射至不同对象中-->
+  <resultMap id="responsibilityMap" type="com.xyc.entity.Responsibility" extends="responsibilityBaseMap">
+    <collection property="menus" columnPrefix="menu_" resultMap="com.xyc.dao.MenuMapper.menuMap" />
+  </resultMap>
+
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="responsibilityMap">
+    select r.id, r.code, r.name, r.input_user_id, r.input_date, r.data_status, r.check_status, r.last_modify_user_id, r.modify_date,
+    m.id menu_id, m.menu_name menu_menu_name, m.url menu_url, m.menu_index menu_menu_index, m.parent_id menu_parent_id, m.display menu_display
+    from sa_responsibility r
+    left join sa_responsibilitymenu rm on r.id = rm.responsibility_id
+    left join sa_menu m on rm.menu_id = m.id
+    where r.id = #{id,jdbcType=INTEGER}
+  </select>
+
+
+  <!--关联的嵌套查询，多次sql查询得到所需对象，可配置懒加载提高性能。column可配置多个，用逗号隔开-->
+  <resultMap id="responsibilityMapSelect" type="com.xyc.entity.Responsibility" extends="responsibilityBaseMap">
+    <collection property="menus" column="{responsibilityId=id}" fetchType="eager" select="com.xyc.dao.MenuMapper.selectMenuByResponsibilityId"/>
+  </resultMap>
+
+  <select id="selectResponsibilityByRoleId"  resultMap="responsibilityMapSelect">
+    select r.id, r.code, r.name, r.input_user_id, r.input_date, r.data_status, r.check_status,
+    r.last_modify_user_id, r.modify_date
+    from sa_responsibility r
+    left join sa_role b on r.id = b.responsibility_id
+    where b.id = #{roleId,jdbcType=INTEGER}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from sa_responsibility
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+
+  <insert id="insert" parameterType="com.xyc.entity.Responsibility">
+    <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into sa_responsibility (id, code, name, 
+      input_user_id, input_date, data_status, 
+      check_status, last_modify_user_id, modify_date
+      )
+    values (#{id,jdbcType=INTEGER}, #{code,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, 
+      #{inputUserId,jdbcType=INTEGER}, #{inputDate,jdbcType=TIMESTAMP}, #{dataStatus,jdbcType=INTEGER}, 
+      #{checkStatus,jdbcType=INTEGER}, #{lastModifyUserId,jdbcType=INTEGER}, #{modifyDate,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xyc.entity.Responsibility">
+    update sa_responsibility
+    set code = #{code,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      input_user_id = #{inputUserId,jdbcType=INTEGER},
+      input_date = #{inputDate,jdbcType=TIMESTAMP},
+      data_status = #{dataStatus,jdbcType=INTEGER},
+      check_status = #{checkStatus,jdbcType=INTEGER},
+      last_modify_user_id = #{lastModifyUserId,jdbcType=INTEGER},
+      modify_date = #{modifyDate,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+
+
+
+  <select id="selectAll" resultMap="responsibilityMap">
+    select id, code, name, input_user_id, input_date, data_status, check_status, last_modify_user_id, 
+    modify_date
+    from sa_responsibility
+  </select>
+</mapper>

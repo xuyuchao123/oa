@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xyc.dao.RoleMapper" >
+
+    <resultMap id="roleBaseMap" type="com.xyc.entity.Role">
+        <id property="id" column="id"/>
+        <result property="roleName" column="role_name"/>
+        <result property="inputUserId" column="input_user_id" />
+        <result property="inputDate" column="input_date"/>
+        <result property="dataStatus" column="data_status" />
+        <result property="roleStatus" column="role_status" />
+        <result property="modifyUserId" column="modify_user_id" />
+        <result property="modifyDate" column="modify_date" />
+    </resultMap>
+
+    <!--关联的嵌套结果映射 一次sql查询将属性映射至不同对象中-->
+    <resultMap id="roleMap" type="com.xyc.entity.Role" extends="roleBaseMap">
+        <association property="responsibility" columnPrefix="resp_"
+                     resultMap="com.xyc.dao.ResponsibilityMapper.responsibilityMap" />
+        <collection property="systems" columnPrefix="sys_" resultMap="com.xyc.dao.SystemMapper.systemMap" />
+    </resultMap>
+
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="roleMap">
+        select a.id, a.role_name, a.input_user_id, a.input_date, a.data_status, a.role_status, a.modify_user_id, a.modify_date,
+        b.id resp_id, b.code resp_code, b.name resp_name, b.input_user_id resp_input_user_id, b.input_date resp_input_date,
+        b.data_status resp_data_status, b.check_status resp_check_status, b.last_modify_user_id resp_last_modify_user_id,
+        b.modify_date resp_modify_date,
+        d.id sys_id, d.sys_name sys_sys_name, d.sys_code sys_sys_code, d.data_status sys_data_status,
+        f.id resp_menu_id, f.menu_name resp_menu_menu_name, f.url resp_menu_url, f.menu_index resp_menu_menu_index, f.parent_id resp_menu_parent_id,
+        f.display resp_menu_display
+        from sa_role a
+        left join sa_responsibility b on a.responsibility_id = b.id
+        left join sa_rolesystem c on c.role_id = a.id
+        left join os_system d on c.system_id = d.id
+        left join sa_responsibilitymenu e on e.responsibility_id = b.id
+        left join sa_menu f on e.menu_id = f.id
+        where a.id = #{id}
+    </select>
+
+    <!--关联的嵌套查询，多次sql查询得到所需对象，可配置懒加载提高性能。column可配置多个，用逗号隔开-->
+    <resultMap id="roleMapSelect" type="com.xyc.entity.Role" extends="roleBaseMap">
+        <association property="responsibility" column="{roleId=id}" fetchType="eager"
+                    select="com.xyc.dao.ResponsibilityMapper.selectResponsibilityByRoleId" />
+        <collection property="systems" column="{roleId=id}" fetchType="eager"
+                    select="com.xyc.dao.SystemMapper.selectSystemByRoleId" />
+    </resultMap>
+
+    <select id="selectRoleByUserId" resultMap="roleMapSelect">
+        select a.id, a.role_name, a.input_user_id, a.input_date, a.data_status, a.role_status,
+        a.modify_user_id, a.modify_date
+        from sa_role a
+        left join sa_userrole b on a.id = b.role_id
+        where b.user_id = #{userId}
+    </select>
+
+
+
+</mapper>
+

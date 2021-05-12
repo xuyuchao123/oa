@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Title</title>
+    <script type="text/javascript">
+        function startProc()
+        {
+            var busKey = document.getElementById("busKey");
+            if(busKey.value == "")
+            {
+                alert("请输入业务id");
+                return false;
+            }
+            var form = document.getElementById("form1");
+            form.submit();
+        }
+
+        function deleteProcDef()
+        {
+            var procName = document.getElementById("procName");
+            if(procName.value == "")
+            {
+                alert("请输入流程名称");
+                return false;
+            }
+            var form = document.getElementById("form2");
+            form.submit();
+        }
+
+        function deleteProcInst()
+        {
+            var procInstId = document.getElementById("procInstId");
+            if(procInstId.value == "")
+            {
+                alert("请输入流程实例id");
+                return false;
+            }
+            var form = document.getElementById("form3");
+            form.submit();
+        }
+
+    </script>
+</head>
+welcome! [[${session.loginUser.userName}]]
+<form id="form1" action = "/startProc" method ="post" >
+    流程key值：<input type = "text"  id = "procKey" name = "procKey"/>
+    业务key值：<input type = "text"  id = "busKey" name = "busKey"/>
+    提交人姓名：<input type = "text"  id = "userName" name = "userName"/>
+
+</form>
+<button onclick="startProc()" id = "submitBtn">开启流程</button>
+
+<br/><br/>
+
+<form id="form2" action = "/deleteProcDefByName" method ="post" >
+    <input type = "text"  id = "procName" name = "procName"/>
+</form>
+<button onclick="deleteProcDef()" id = "deleteProcDefBtn">删除流程部署</button>
+
+<br/><br/>
+
+<a href = "/findAllProcInst">查看当前所有流程实例</a>
+
+<br/><br/>
+
+<form id="form3" action="/deleteProcInst" method = "post">
+    <input type="text" id = "procInstId" name = "procInstId" placeholder="流程实例id~"/>
+</form>
+<button onclick="deleteProcInst()" id ="deleteProcInstBtn" >删除流程实例</button>
+
+</body>
+</html>

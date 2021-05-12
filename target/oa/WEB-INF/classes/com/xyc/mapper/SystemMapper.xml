@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xyc.dao.SystemMapper">
+
+  <resultMap id="systemMap" type="com.xyc.entity.System">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="sys_name" jdbcType="VARCHAR" property="sysName" />
+    <result column="sys_code" jdbcType="VARCHAR" property="sysCode" />
+    <result column="data_status" jdbcType="VARCHAR" property="dataStatus" />
+  </resultMap>
+
+  <select id="selectSystemByRoleId" resultMap="systemMap">
+    select a.id, a.sys_name, a.sys_code, a.data_status
+    from os_system a
+    left join sa_rolesystem b on a.id = b.system_id
+    where b.role_id = #{roleId}
+  </select>
+
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from os_system
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.xyc.entity.System">
+    <selectKey keyProperty="id" order="BEFORE" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into os_system (id, sys_name, sys_code, 
+      data_status)
+    values (#{id,jdbcType=INTEGER}, #{sysName,jdbcType=VARCHAR}, #{sysCode,jdbcType=VARCHAR}, 
+      #{dataStatus,jdbcType=VARCHAR})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.xyc.entity.System">
+    update os_system
+    set sys_name = #{sysName,jdbcType=VARCHAR},
+      sys_code = #{sysCode,jdbcType=VARCHAR},
+      data_status = #{dataStatus,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="systemMap">
+    select id, sys_name, sys_code, data_status
+    from os_system
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="selectAll" resultMap="systemMap">
+    select id, sys_name, sys_code, data_status
+    from os_system
+  </select>
+
+
+
+
+</mapper>

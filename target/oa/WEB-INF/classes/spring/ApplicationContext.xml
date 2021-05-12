@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/tx
+           http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+    <context:component-scan base-package="com.xyc.dao.impl" />
+    <context:component-scan base-package="com.xyc.service.impl" />
+
+    <!--IOC容器工具类-->
+    <bean class="com.xyc.util.SpringBeanHolder" />
+
+    <!--读取属性文件-->
+    <context:property-placeholder location="classpath:db.properties" />
+
+
+    <!--配置DataSource(数据源)-->
+    <!--spring 提供的数据源不支持连接池功能，实际环境中不适用-->
+    <!--可以使用第三方数据源如:dbcp c3p0 druid-->
+    <!--<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource" >-->
+    <!--<property name="driverClassName" value="${jdbc.driverClassName}" />-->
+    <!--<property name="url" value="${jdbc.url}" />-->
+    <!--<property name="username" value="${jdbc.username}" />-->
+    <!--<property name="password" value="${jdbc.password}" />-->
+    <!--</bean>-->
+
+    <!--使用dbcp-->
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" >
+        <property name="driverClassName" value="${jdbc.driver}" />
+        <property name="url" value="${jdbc.url}" />
+        <property name="username" value="${jdbc.username}" />
+        <property name="password" value="${jdbc.password}" />
+        <property name="initialSize" value="${jdbc.initialSize}" />
+        <property name="maxActive" value="100" />
+        <property name="minIdle" value="3" />
+        <property name="maxIdle" value="20" />
+        <property name="maxWait" value="5000" />
+    </bean>
+
+
+    <!--配置jdbcTemplate-->
+    <bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate" >
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+    <!--配置事务管理器（事务增强）-->
+    <bean id = "transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager" >
+        <property name="dataSource" ref = "dataSource" ></property>
+    </bean>
+
+    <!--基于注解的事务配置-->
+    <tx:annotation-driven transaction-manager="transactionManager"/>
+
+    <bean id="processEngineConfiguration" class="org.activiti.spring.SpringProcessEngineConfiguration">
+        <property name="dataSource" ref="dataSource" />
+        <property name="transactionManager" ref="transactionManager" />
+        <property name="databaseSchemaUpdate" value="true" />
+        <property name="mailServerHost" value="localhost" />
+        <property name="mailServerPort" value="5025" />
+        <property name="jobExecutorActivate" value="false" />
+        <property name="deploymentResources" value="classpath:activitibpmn/vocationApply.bpmn" />
+    </bean>
+
+
+    <bean id="processEngine" class="org.activiti.spring.ProcessEngineFactoryBean">
+        <property name="processEngineConfiguration" ref="processEngineConfiguration" />
+    </bean>
+    <bean id="repositoryService" factory-bean="processEngine" factory-method="getRepositoryService" />
+    <bean id="runtimeService" factory-bean="processEngine" factory-method="getRuntimeService" />
+    <bean id="taskService" factory-bean="processEngine" factory-method="getTaskService" />
+    <bean id="formService" factory-bean="processEngine" factory-method="getFormService" />
+    <bean id="historyService" factory-bean="processEngine" factory-method="getHistoryService" />
+    <bean id="managementService" factory-bean="processEngine" factory-method="getManagementService" />
+    <bean id="identityService" factory-bean="processEngine" factory-method="getIdentityService" />
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <property name="dataSource" ref="dataSource"/>
+        <property name="mapperLocations">
+            <array>
+                <value>classpath:com/xyc/mapper/*.xml</value>
+            </array>
+        </property>
+        <!-- 为映射类指定别名 -->
+        <property name="typeAliasesPackage" value="com.xyc.entity"/>
+    </bean>
+
+    <!--MyBatis-Spring 支持3种配置方式对类路径进行扫描来发现所有mapper类映射器-->
+    <!--1.<mybatis:scan /> 它发现映射器的方法与 Spring的<context:component-scan/> 发现bean的方法非常类似-->
+    <!--<mybatis:scan base-package="com.xyc.dao" />-->
+    <!--2.使用@MapperScan 注解 在spring配置类上添加@MapperScan("org.mybatis.spring.sample.mapper")-->
+
+    <!-- 3.配置MapperScannerConfigurer 通过反射创建mapper实现类并添加到ioc容器中 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!--指定 sqlSessionFactory -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+        <!-- 指定接口所在包 -->
+        <property name="basePackage" value="com.xyc.dao"/>
+    </bean>
+
+    <!--viewResolver-->
+    <bean id="viewResolver" class="org.thymeleaf.spring4.view.ThymeleafViewResolver">
+        <property name="order" value="1"/>
+        <property name="characterEncoding" value="UTF-8"/>
+        <property name="templateEngine" ref="templateEngine"/>
+    </bean>
+    <!-- templateEngine -->
+    <bean id="templateEngine" class="org.thymeleaf.spring4.SpringTemplateEngine">
+        <property name="templateResolver" ref="templateResolver"/>
+    </bean>
+
+    <bean id="templateResolver" class="org.thymeleaf.spring4.templateresolver.SpringResourceTemplateResolver">
+        <property name="prefix" value="/WEB-INF/view/"/>
+        <property name="suffix" value=".html"/>
+        <property name="templateMode" value="HTML5"/>
+        <property name="characterEncoding" value="utf-8" />
+        <property name="cacheable" value="false" />
+    </bean>
+
+    <!--以下注释掉的配置为基于命名空间的事务配置 aop2.x配置-->
+    <!--配置advice-->
+    <!--<tx:advice id="txAdvice" transaction-manager="transactionManager">-->
+        <!--&lt;!&ndash;配置事务属性&ndash;&gt;-->
+        <!--<tx:attributes>-->
+            <!--<tx:method name="login" propagation="SUPPORTS" read-only="true"/>-->
+            <!--<tx:method name="regist" propagation="REQUIRED" isolation="READ_COMMITTED" rollback-for="java.lang.Exception" />-->
+        <!--</tx:attributes>-->
+    <!--</tx:advice>-->
+
+    <!--&lt;!&ndash;配置pointcut并织入&ndash;&gt;-->
+    <!--<aop:config>-->
+        <!--<aop:pointcut id="pc" expression="execution(* main.java.com.xyc.service.impl.*.*(..))" />-->
+        <!--<aop:advisor advice-ref="txAdvice" pointcut-ref="pc" />-->
+    <!--</aop:config>-->
+
+</beans>

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+
+    <!-- 配置handlerMapping  -->
+    <!--<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />-->
+
+    <!-- 配置handlerAdapter  -->
+    <!--<bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter" />-->
+
+    <!-- 可用该简化配置代替以上配置handlerMapping和 handlerAdapter
+          并且会默认加载许多内置的类型转换器，若配置了自定义的类型转换器，则需要手动指定
+           例如：<mvc:annotation-driven conversion-service="转换器bean的id值" />-->
+    <mvc:annotation-driven />
+
+    <!-- 配置handler  -->
+    <context:component-scan base-package="com.xyc.controller" />
+
+    <!-- 配置jsp viewResolver -->
+    <!--<bean class="org.springframework.web.servlet.view.InternalResourceViewResolver" >-->
+        <!--<property name="prefix" value="WEB-INF/view/" />-->
+        <!--<property name="suffix" value=".html" />-->
+        <!--&lt;!&ndash; 配置view &ndash;&gt;-->
+        <!--<property name="viewClass" value="org.springframework.web.servlet.view.JstlView" />-->
+    <!--</bean>-->
+
+    <!--使用tomcat默认的servlet处理静态资源,避免dispatchservlet处理所有请求
+    这种方法只能将静态资源放在webapp下不能放在webinf下，且必须使用tomcat容器-->
+    <!--<mvc:default-servlet-handler />-->
+
+    <mvc:resources mapping="/img/**" location="/img/" />
+    <mvc:resources mapping="/layuiadmin/**" location="/layuiadmin/" />
+
+    <!-- 配置拦截器 -->
+    <mvc:interceptors>
+        <!--拦截所有请求-->
+        <!--<bean class="com.xyc.interceptor.MyInterceptor" />-->
+        <!--拦截/login请求-->
+        <mvc:interceptor>
+            <mvc:mapping path="/login"/>
+            <bean class="com.xyc.interceptor.MyInterceptor" />
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+</beans>
